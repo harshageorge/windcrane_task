@@ -5,6 +5,8 @@ export const AppContextProvider = (props) => {
   const [loggedIn, setloggedIn] = useState(false);
   const [getSelectedListId, setgetSelectedListId] = useState([]);
   const [historicalData, sethistoricalData] = useState([]);
+  const [chartData, setchartData] = useState([]);
+
 
   const LogIn = () => {
     const APIToken = JSON.parse(localStorage.getItem("Token"));
@@ -27,6 +29,8 @@ export const AppContextProvider = (props) => {
     setgetSelectedListId,
     historicalData,
     sethistoricalData,
+    chartData, 
+    setchartData,
   };
 
   return (

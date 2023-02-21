@@ -8,8 +8,9 @@ import { AppContext } from "../components/app-context";
 import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
-  const { LogOut } = useContext(AppContext);
+  const { LogOut, setloggedIn } = useContext(AppContext);
   const navigate = useNavigate();
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
@@ -30,10 +31,30 @@ export default function Navbar() {
           </Typography>
           <Button
             color="inherit"
-            sx={{ fontWeight: 700,fontSize:17}}
+            sx={{ fontWeight: 700, fontSize: 17 }}
             onClick={() => {
-              LogOut();
-              navigate("/");
+              let APIToken = JSON.parse(localStorage.getItem("Token"));
+              let axiosConfig = {
+                headers: {
+                  Accept: "application/json",
+                  Authorization: `Bearer ${APIToken}`,
+                },
+              };
+              fetch(
+                `https://user.windcrane.com/manager/api/v1/logout`,
+                axiosConfig
+              )
+                .then((response) => response.json())
+                .then((resData) => {
+                  if (resData.response.status_code == 200) {
+                    LogOut();
+                    setloggedIn(false);
+                    navigate("/");
+                  }
+                })
+                .catch((err) => {
+                  console.log(err.message);
+                });
             }}
           >
             Log out

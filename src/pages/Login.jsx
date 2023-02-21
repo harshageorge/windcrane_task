@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import { Grid, Paper, TextField, Button } from "@mui/material";
 import { AppContext } from "../components/app-context";
@@ -9,28 +9,48 @@ const Login = () => {
     username: "",
     password: "",
   });
-  const { LogIn } = useContext(AppContext);
+  const [errorMessage, seterrorMessage] = useState("");
+  const { LogIn, setloggedIn } = useContext(AppContext);
   const navigate = useNavigate();
+  useEffect(() => {
+    const APIToken = JSON.parse(localStorage.getItem("Token"));
+    if (APIToken) {
+      setloggedIn(true);
+      navigate("/home");
+    }
+  }, []);
   const handleSubmit = (e) => {
     e.preventDefault();
-    localStorage.setItem("Token", JSON.stringify("abcedfg"));
-    LogIn();
-    navigate("/home");
-    // let axiosConfig = {
-    //     headers: {
-    //       "Content-Type": "application/json"
-    //     },
-    //     withCredentials:true
-    //   };
-    // axios.post("URL",JSON.stringify({
-    //     username:values.username,
-    //     password:values.password
-    // }),axiosConfig
-    // )
-    // .then((res)=>localStorage.setItem("Token",res?.data?.token))
-    // .catch((err)=>console.log(err));
+    let axiosConfig = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+    axios
+      .post(
+        "https://user.windcrane.com/manager/api/v1/login",
+        JSON.stringify({
+          email: values.username,
+          password: values.password,
+        }),
+        axiosConfig
+      )
+      .then((res) => {
+        localStorage.setItem(
+          "Token",
+          JSON.stringify(res.data.response.response_body.user.access_token)
+        );
+        if (res.data.response.status_code == 200) {
+          LogIn();
+          navigate("/home");
+        }
+      })
+      .catch((err) => {
+        seterrorMessage(err.response.data.response.message);
+        console.log(err.response.data.response.message);
+      });
   };
-  const paperStyle = { padding: 15, minheight: "60vh"};
+  const paperStyle = { padding: 15, minheight: "60vh" };
   const btnstyle = { margin: "20px 0" };
 
   return (
@@ -40,7 +60,7 @@ const Login = () => {
       direction="column"
       alignItems="center"
       justifyContent="center"
-      style={{ minHeight: "100vh",padding:10 }}
+      style={{ minHeight: "100vh", padding: 10 }}
     >
       <Paper elevation={10} style={paperStyle}>
         <form onSubmit={handleSubmit}>
@@ -68,6 +88,7 @@ const Login = () => {
             fullWidth
             required
           />
+          {errorMessage ? errorMessage : ""}
           <Button
             type="submit"
             color="primary"
